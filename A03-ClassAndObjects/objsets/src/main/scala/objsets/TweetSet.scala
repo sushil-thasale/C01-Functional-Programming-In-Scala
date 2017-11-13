@@ -237,26 +237,23 @@ object GoogleVsApple {
   }
 
 object Main extends App {
-//  GoogleVsApple.googleTweets.foreach(println)
-//  println("\n\n")
-//  GoogleVsApple.appleTweets.foreach(println)
-//  // Print the trending tweets
-//  GoogleVsApple.trending foreach println
+  GoogleVsApple.trending foreach println
 
   // testing ***
-  val tweet1: Tweet = new Tweet("mashable", "iphone", 50)
-  val tweet2: Tweet = new Tweet("mashable", "android", 60)
-  val one : TweetSet = new NonEmpty(tweet1, new Empty, new Empty)
-  val two : TweetSet = new NonEmpty(tweet2, new Empty, new Empty)
-  val allTweets: TweetSet = one.union(two)
-  one.union(two).descendingByRetweet.foreach(println)
+//  val tweet1: Tweet = new Tweet("mashable", "iphone", 50)
+//  val tweet2: Tweet = new Tweet("mashable", "android", 60)
+//  val one : TweetSet = new NonEmpty(tweet1, new Empty, new Empty)
+//  val two : TweetSet = new NonEmpty(tweet2, new Empty, new Empty)
+//  val allTweets: TweetSet = one.union(two)
+//  one.union(two).descendingByRetweet.foreach(println)
+//
+//  lazy val googleTweets: TweetSet = allTweets.filter(GoogleVsApple.hasKeywords(GoogleVsApple.google))
+//  lazy val appleTweets: TweetSet = allTweets.filter(GoogleVsApple.hasKeywords(GoogleVsApple.apple))
+//  lazy val trending: TweetList = googleTweets.union(appleTweets).descendingByRetweet
+//  googleTweets.foreach(println)
+//  println("\n\n")
+//  appleTweets.foreach(println)
+//  println("\n\n")
+//  trending.foreach(println)
 
-  lazy val googleTweets: TweetSet = allTweets.filter(GoogleVsApple.hasKeywords(GoogleVsApple.google))
-  lazy val appleTweets: TweetSet = allTweets.filter(GoogleVsApple.hasKeywords(GoogleVsApple.apple))
-  lazy val trending: TweetList = googleTweets.union(appleTweets).descendingByRetweet
-  googleTweets.foreach(println)
-  println("\n\n")
-  appleTweets.foreach(println)
-  println("\n\n")
-  trending.foreach(println)
 }
