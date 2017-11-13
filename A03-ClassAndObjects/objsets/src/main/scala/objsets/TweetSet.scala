@@ -1,7 +1,6 @@
 package objsets
 
 import TweetReader._
-import org.scalatest.Matchers.KeyWord
 
 /**
  * A class to represent tweets.
