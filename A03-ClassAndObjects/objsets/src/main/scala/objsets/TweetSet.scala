@@ -1,6 +1,7 @@
 package objsets
 
 import TweetReader._
+import org.scalatest.Matchers.KeyWord
 
 /**
  * A class to represent tweets.
@@ -55,7 +56,7 @@ abstract class TweetSet {
    * and be implemented in the subclasses?
    */
   def union(that: TweetSet): TweetSet
-  
+
   /**
    * Returns the tweet from this set which has the greatest retweet count.
    *
@@ -66,7 +67,7 @@ abstract class TweetSet {
    * and be implemented in the subclasses?
    */
     def mostRetweeted: Tweet = ???
-  
+
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
    * in descending order. In other words, the head of the resulting list should
@@ -77,7 +78,7 @@ abstract class TweetSet {
    * and be implemented in the subclasses?
    */
     def descendingByRetweet: TweetList
-  
+
   /**
    * The following methods are already implemented
    */
@@ -112,7 +113,7 @@ abstract class TweetSet {
 
 class Empty extends TweetSet {
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
-  
+
   /**
    * The following methods are already implemented
    */
@@ -167,8 +168,12 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     right.foreach(f)
   }
 
-  def union(that: TweetSet): TweetSet =
-    (((left union right) union that) incl elem)
+  def union(that: TweetSet): TweetSet = {
+    if(isEmpty()) that
+    else {
+      right.union(left.union(that.incl(elem)))
+    }
+  }
 
   override def isEmpty(): Boolean = false
 
@@ -218,27 +223,12 @@ object GoogleVsApple {
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
   val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
-  def hasKeywordGoogle(tweet: Tweet) : Boolean = {
-    val keywords = google
-    val words = tweet.text.split("\\s+")
-    for (word <- words) {
-      if (keywords.contains(word)) true
-    }
-    false
-  }
+  def hasKeywords(keyWords: List[String]) = (tweet: Tweet) =>
+    keyWords.exists(word => tweet.text.contains(word))
 
-  def hasKeywordApple(tweet: Tweet) : Boolean = {
-    val keywords = apple
-    val words = tweet.text.split("\\s+")
-    for (word <- words) {
-      if (keywords.contains(word)) true
-    }
-    false
-  }
+  lazy val googleTweets: TweetSet = TweetReader.allTweets.filter(hasKeywords(google))
+  lazy val appleTweets: TweetSet = TweetReader.allTweets.filter(hasKeywords(apple))
 
-  lazy val googleTweets: TweetSet = TweetReader.allTweets.filter(hasKeywordGoogle)
-  lazy val appleTweets: TweetSet = TweetReader.allTweets.filter(hasKeywordApple)
-  
   /**
    * A list of all tweets mentioning a keyword from either apple or google,
    * sorted by the number of retweets.
@@ -247,6 +237,26 @@ object GoogleVsApple {
   }
 
 object Main extends App {
-  // Print the trending tweets
-  GoogleVsApple.trending foreach println
+//  GoogleVsApple.googleTweets.foreach(println)
+//  println("\n\n")
+//  GoogleVsApple.appleTweets.foreach(println)
+//  // Print the trending tweets
+//  GoogleVsApple.trending foreach println
+
+  // testing ***
+  val tweet1: Tweet = new Tweet("mashable", "iphone", 50)
+  val tweet2: Tweet = new Tweet("mashable", "android", 60)
+  val one : TweetSet = new NonEmpty(tweet1, new Empty, new Empty)
+  val two : TweetSet = new NonEmpty(tweet2, new Empty, new Empty)
+  val allTweets: TweetSet = one.union(two)
+  one.union(two).descendingByRetweet.foreach(println)
+
+  lazy val googleTweets: TweetSet = allTweets.filter(GoogleVsApple.hasKeywords(GoogleVsApple.google))
+  lazy val appleTweets: TweetSet = allTweets.filter(GoogleVsApple.hasKeywords(GoogleVsApple.apple))
+  lazy val trending: TweetList = googleTweets.union(appleTweets).descendingByRetweet
+  googleTweets.foreach(println)
+  println("\n\n")
+  appleTweets.foreach(println)
+  println("\n\n")
+  trending.foreach(println)
 }
