@@ -112,12 +112,10 @@ object Huffman {
    * unchanged.
    */
     def combine(trees: List[CodeTree]): List[CodeTree] = {
-      if(trees.size < 2) trees
-      else {
-        val left: CodeTree = trees(0)
-        val right: CodeTree = trees(1)
-        combine(List(makeCodeTree(left, right)) ++ trees.drop(2))
-      }
+      val left: CodeTree = trees(0)
+      val right: CodeTree = trees(1)
+      (List(makeCodeTree(left, right)) ++ trees.drop(2))
+        .sortWith((t1, t2) => weight(t1) < weight(t2))
     }
   
   /**
@@ -137,7 +135,11 @@ object Huffman {
    *    the example invocation. Also define the return type of the `until` function.
    *  - try to find sensible parameter names for `xxx`, `yyy` and `zzz`.
    */
-    def until(xxx: ???, yyy: ???)(zzz: ???): ??? = ???
+    def until(s: List[CodeTree] => Boolean, c: List[CodeTree] => List[CodeTree])
+             (trees: List[CodeTree]): List[CodeTree] = {
+      if(s(trees)) trees
+      else until(s, c)(c(trees))
+    }
   
   /**
    * This function creates a code tree which is optimal to encode the text `chars`.
@@ -145,8 +147,9 @@ object Huffman {
    * The parameter `chars` is an arbitrary text. This function extracts the character
    * frequencies from that text and creates a code tree based on them.
    */
-    def createCodeTree(chars: List[Char]): CodeTree = ???
-  
+    def createCodeTree(chars: List[Char]): CodeTree = {
+      until(singleton, combine) (makeOrderedLeafList(times(chars))).head
+    }
 
   // Part 3: Decoding
 
@@ -167,7 +170,7 @@ object Huffman {
 
   /**
    * What does the secret message say? Can you decode it?
-   * For the decoding use the `frenchCode' Huffman tree defined above.
+   * For the decoding use the 'frenchCode' Huffman tree defined above.
    */
   val secret: List[Bit] = List(0,0,1,1,1,0,1,0,1,1,1,0,0,1,1,0,1,0,0,1,1,0,1,0,1,1,0,0,1,1,1,1,1,0,1,0,1,1,0,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,1)
 
