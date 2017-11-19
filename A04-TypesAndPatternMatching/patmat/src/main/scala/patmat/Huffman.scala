@@ -1,8 +1,5 @@
 package patmat
 
-import com.sun.org.apache.bcel.internal.classfile.Code
-import common._
-
 import scala.collection.mutable.HashMap
 
 /**
@@ -34,7 +31,7 @@ object Huffman {
 
   def chars(tree: CodeTree): List[Char] = tree match {
     case Leaf(c, _) => List(c)
-    case Fork(_, _, c, _) => c
+    case Fork(_, _, lc, _) => lc
   }
   
   def makeCodeTree(left: CodeTree, right: CodeTree) =
@@ -148,7 +145,7 @@ object Huffman {
    * frequencies from that text and creates a code tree based on them.
    */
     def createCodeTree(chars: List[Char]): CodeTree = {
-      until(singleton, combine) (makeOrderedLeafList(times(chars))).head
+      (until(singleton, combine) (makeOrderedLeafList(times(chars)))).head
     }
 
   // Part 3: Decoding
@@ -194,10 +191,10 @@ object Huffman {
    * into a sequence of bits.
    */
   def encode(tree: CodeTree)(text: List[Char]): List[Bit] = {
-    def lookup(c: Char, tree: CodeTree) : List[Bit] = tree match {
+    def lookup(c: Char, subTree: CodeTree) : List[Bit] = subTree match {
       case Leaf(_, _) => List()
-      case Fork(left, right, _, _) => (if (chars(left).contains(c)) 0 :: (lookup(c, left))
-                                        else 1:: lookup(c, right))
+      case Fork(left, right, _, _) => if (chars(left).contains(c)) 0 :: lookup(c, left)
+                                      else 1:: lookup(c, right)
     }
     text.flatMap(char => lookup(char, tree))
   }
@@ -250,3 +247,14 @@ object Huffman {
       text.flatMap(c => codeBits(codeTable)(c))
     }
   }
+
+object Main extends App {
+  import Huffman._
+
+//  val tree = Fork(Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5), Leaf('d',4), List('a','b','d'), 9)
+//  val encoded = encode(tree)(string2Chars("abd"))
+//  println( encoded )
+//  println( quickEncode(tree)(string2Chars("abd")) )
+
+//  println( decodedSecret )
+}
