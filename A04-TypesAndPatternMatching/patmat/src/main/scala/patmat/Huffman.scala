@@ -1,5 +1,6 @@
 package patmat
 
+import com.sun.org.apache.bcel.internal.classfile.Code
 import common._
 
 import scala.collection.mutable.HashMap
@@ -137,8 +138,7 @@ object Huffman {
    */
     def until(s: List[CodeTree] => Boolean, c: List[CodeTree] => List[CodeTree])
              (trees: List[CodeTree]): List[CodeTree] = {
-      if(s(trees)) trees
-      else until(s, c)(c(trees))
+      if(s(trees)) trees else until(s, c)(c(trees))
     }
   
   /**
@@ -159,7 +159,14 @@ object Huffman {
    * This function decodes the bit sequence `bits` using the code tree `tree` and returns
    * the resulting list of characters.
    */
-    def decode(tree: CodeTree, bits: List[Bit]): List[Char] = ???
+    def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
+      def traverse(subTree: CodeTree, subList: List[Bit]): List[Char] = subTree match {
+        case Leaf(c, _) => if (subList.isEmpty) List(c) else c :: traverse(tree, subList)
+        case Fork(left, right, _, _) => if (subList.head == 0) traverse(left, subList.tail)
+                                        else traverse(right, subList.tail)
+      }
+      traverse(tree, bits)
+    }
   
   /**
    * A Huffman coding tree for the French language.
@@ -177,7 +184,7 @@ object Huffman {
   /**
    * Write a function that returns the decoded secret
    */
-    def decodedSecret: List[Char] = ???
+  def decodedSecret: List[Char] = decode(frenchCode, secret)
   
 
   // Part 4a: Encoding using Huffman tree
@@ -186,17 +193,25 @@ object Huffman {
    * This function encodes `text` using the code tree `tree`
    * into a sequence of bits.
    */
-    def encode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+  def encode(tree: CodeTree)(text: List[Char]): List[Bit] = {
+    def lookup(c: Char, tree: CodeTree) : List[Bit] = tree match {
+      case Leaf(_, _) => List()
+      case Fork(left, right, _, _) => (if (chars(left).contains(c)) 0 :: (lookup(c, left))
+                                        else 1:: lookup(c, right))
+    }
+    text.flatMap(char => lookup(char, tree))
+  }
   
   // Part 4b: Encoding using code table
-
-  type CodeTable = List[(Char, List[Bit])]
+  type Code = (Char, List[Bit])
+  type CodeTable = List[Code]
 
   /**
    * This function returns the bit sequence that represents the character `char` in
    * the code table `table`.
    */
-    def codeBits(table: CodeTable)(char: Char): List[Bit] = ???
+  def codeBits(table: CodeTable)(char: Char): List[Bit] =
+    table.filter((code) => (code._1 == char)).head._2
   
   /**
    * Given a code tree, create a code table which contains, for every character in the
@@ -206,14 +221,23 @@ object Huffman {
    * a valid code tree that can be represented as a code table. Using the code tables of the
    * sub-trees, think of how to build the code table for the entire tree.
    */
-    def convert(tree: CodeTree): CodeTable = ???
+  def convert(tree: CodeTree): CodeTable = tree match {
+    case Leaf(c, _) => List((c, List()))
+    case Fork(left, right, _, _) => mergeCodeTables(convert(left), convert(right))
+  }
   
   /**
    * This function takes two code tables and merges them into one. Depending on how you
    * use it in the `convert` method above, this merge method might also do some transformations
    * on the two parameter code tables.
    */
-    def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = ???
+    def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = {
+      def prepend(code: Code, bit: Bit): Code = {
+        (code._1, bit :: code._2)
+      }
+
+      a.map((code) => prepend(code, 0)) ::: b.map((code) => prepend(code, 1))
+    }
   
   /**
    * This function encodes `text` according to the code tree `tree`.
@@ -221,5 +245,8 @@ object Huffman {
    * To speed up the encoding process, it first converts the code tree to a code table
    * and then uses it to perform the actual encoding.
    */
-    def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+    def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = {
+      val codeTable: CodeTable = convert(tree)
+      text.flatMap(c => codeBits(codeTable)(c))
+    }
   }
