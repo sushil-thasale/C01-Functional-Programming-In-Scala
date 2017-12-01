@@ -1,5 +1,6 @@
 package forcomp
 
+import scala.collection.immutable.SortedMap
 
 object Anagrams {
 
@@ -84,7 +85,10 @@ object Anagrams {
    *  Note that the order of the occurrence list subsets does not matter -- the subsets
    *  in the example above could have been displayed in some other order.
    */
-  def combinations(occurrences: Occurrences): List[Occurrences] = ???
+  def combinations(occurrences: Occurrences): List[Occurrences] =
+    (occurrences foldRight List[Occurrences](Nil)) { case ((ch, freq), acc) => {
+      acc ++ {for { ors <- acc; n <- 1 to freq } yield ((ch, n) :: ors)}
+    }
 
   /** Subtracts occurrence list `y` from occurrence list `x`.
    *
@@ -96,7 +100,14 @@ object Anagrams {
    *  Note: the resulting value is an occurrence - meaning it is sorted
    *  and has no zero-entries.
    */
-  def subtract(x: Occurrences, y: Occurrences): Occurrences = ???
+  def subtract(x: Occurrences, y: Occurrences): Occurrences = {
+    val sortedX: SortedMap[Char, Int] = SortedMap[Char, Int]() ++ x
+    for ((ch, freq) <- y) {
+     val newFreq: Int = sortedX(ch) - freq
+      if (newFreq > 0) sortedX.updated(ch, newFreq) else sortedX - ch
+    }
+    sortedX.toList
+  }
 
   /** Returns a list of all anagram sentences of the given sentence.
    *

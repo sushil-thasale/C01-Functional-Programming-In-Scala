@@ -1,5 +1,10 @@
+import scala.collection.immutable.SortedMap
+
 "hello".groupBy(identity).mapValues(_.size).toList
 
-//def wordOccurrences(w: String): List[(Char, Int)] =
-//  w.groupBy(_._1).map()
+val x = List(('z', 10), ('a', 20))
+val sortedX = SortedMap[Char, Int]() ++ x
+sortedX.contains('d')
+
+
 
